@@ -1,0 +1,106 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+from tensorflow.keras.datasets import fashion_mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten, MaxPooling2D, Conv2D
+
+# --------------------------------
+# 1. Load Dataset
+# --------------------------------
+(train_x, train_y), (test_x, test_y) = fashion_mnist.load_data()
+
+# Normalize data
+train_x = train_x.astype(np.float32) / 255.0
+test_x = test_x.astype(np.float32) / 255.0
+
+# Reshape for CNN
+train_x = train_x.reshape(-1, 28, 28, 1)
+test_x = test_x.reshape(-1, 28, 28, 1)
+
+# --------------------------------
+# 2. Build CNN Model
+# --------------------------------
+model = Sequential()
+
+model.add(Conv2D(
+    filters=64,
+    kernel_size=(3, 3),
+    activation='relu',
+    input_shape=(28, 28, 1)
+))
+
+# Max Pooling Layer
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+# Flatten Layer
+model.add(Flatten())
+
+# Dense Layers
+model.add(Dense(128, activation="relu"))
+model.add(Dense(10, activation="softmax"))
+
+# --------------------------------
+# 3. Model Summary
+# --------------------------------
+model.summary()
+
+# --------------------------------
+# 4. Compile Model
+# --------------------------------
+model.compile(
+    optimizer='adam',
+    loss='sparse_categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+# --------------------------------
+# 5. Train Model
+# --------------------------------
+model.fit(
+    train_x,
+    train_y,
+    epochs=5,
+    validation_split=0.2
+)
+
+# --------------------------------
+# 6. Evaluate Model
+# --------------------------------
+loss, acc = model.evaluate(test_x, test_y)
+
+print("\nTest Accuracy:", acc)
+
+# --------------------------------
+# 7. Labels
+# --------------------------------
+labels = [
+    't_shirt',
+    'trouser',
+    'pullover',
+    'dress',
+    'coat',
+    'sandal',
+    'shirt',
+    'sneaker',
+    'bag',
+    'ankle_boots'
+]
+
+# --------------------------------
+# 8. Prediction
+# --------------------------------
+predictions = model.predict(test_x[:1])
+
+label = labels[np.argmax(predictions)]
+
+print("\nPredicted Label:", label)
+
+# --------------------------------
+# 9. Display Image
+# --------------------------------
+plt.imshow(test_x[0].reshape(28, 28), cmap='gray')
+plt.title(label)
+plt.axis('off')
+
+plt.show()
